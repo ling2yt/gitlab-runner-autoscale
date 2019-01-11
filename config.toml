@@ -1,0 +1,66 @@
+#gitlab-runner在stage中最多同时执行的job数量
+concurrent = 3
+check_interval = 0
+
+[session_server]
+  session_timeout = 1800
+[[runners]]
+  name = "gitlab-runner-Basition-BJ"
+  url = "https://gitlab.domain/"
+  token = "3a8e3af16b51d407dcew1487413d40"
+  executor = "docker+machine"
+  #最多的docker-machine数量，当job+IdleCount > limit时，机器数量为limit
+  limit = 3
+  [runners.docker]
+    tls_verify = false
+    #配置好aws配置的ubuntu机器（执行ci的docker镜像，需要包含ci执行过程中的所有指令），提前上传到dockerhub中，私有库镜像验证未调研
+    image = "ubuntu-awscli:16.04.2"
+    privileged = true
+    disable_entrypoint_overwrite = false
+    oom_kill_disable = false
+    #disable_cache = true 可以使用S3作为ci过程中的cache加快ci build时间
+    disable_cache = false
+    #设置执行ci的容器的挂载路径，如代码路径，docker路径
+    volumes = ["/builds:/builds:rw","/usr/bin/docker:/bin/docker", "/var/run/docker.sock:/var/run/docker.sock", "/home/ubuntu/gitlab-runner", "/home/project/cache"]
+    shm_size = 0
+  [runners.cache]
+#    Type = "s3"
+#    ServerAddress = "s3.amazonaws.com"
+#    AccessKey = "<your AWS Access Key ID>"
+#    SecretKey = "<your AWS Secret Access Key>"
+    #已创建好的S3 Bucket Name
+#    BucketName = "<the bucket where your cache should be kept>"  
+    #AWS region，国内由于当前gitlab-runner选用aws-sdk-go版本，默认追加后缀的问题，只能选用beijing region的机器，即cn-north-1   
+#    BucketLocation = "cn-north-1"
+#    Shared = true
+  [runners.machine]
+    #非offpeak时间段，保存的闲置instance数量（没有分配job的instance）
+    IdleCount = 1
+    #超出IdleCount数量的instance，在IdleTime时间后直接terminate，不经过stop操作
+    IdleTime = 1800
+    MaxBuilds = 10
+    #offpeak时间段设置
+    OffPeakPeriods = [
+      "* * 0-9,18-23 * * mon-fri *",
+      "* * * * * sat,sun *"
+    ]
+    #offpeak时间段，保存的instance数量
+    OffPeakIdleCount = 0
+    OffPeakIdleTime = 1200
+    MachineDriver = "amazonec2"
+    MachineName = "gitlab-docker-machine-%s"
+    MachineOptions = [
+      "amazonec2-access-key=<your AWS Access Key ID>",
+      "amazonec2-secret-key=<your AWS Secret Access Key>",
+      "amazonec2-region=cn-north-1",
+      "amazonec2-vpc-id=vpc-f2542a96",
+      "amazonec2-subnet-id=subnet-9e41c6fa",
+      "amazonec2-use-private-address=true",
+      "amazonec2-tags=runner-manager-name,gitlab-runner-Basition-BJ,gitlab,true,gitlab-runner-autoscale,true",
+      "amazonec2-security-group=gilab-runner-bastion",
+      "amazonec2-instance-type=t2.medium"
+#      "amazonec2-instance-type=c3.large",
+#      "amazonec2-request-spot-instance=true",      //是否启动 aws spot instance
+#      "amazonec2-spot-price=1.0",                  //aws spot instance最高价格
+#      "amazonec2-block-duration-minutes=60"        //aws spot instance保存时间
+    ]
