@@ -1,7 +1,7 @@
 # gitlab-runner-autoscale
 # ubuntu16.04
 
-# ==============================  prepare  =================================
+# ==========  prepare  =============
 
 ## 安装docker
 ```
@@ -55,7 +55,7 @@ More: https://docs.gitlab.com/runner/register/index.html#gnu-linux
 ```
 usermod -a -G docker gitlab-runner
 ```
-# ========================== configure gitlab-runner ====================================
+# ========== configure gitlab-runner =============
 
 ## shell
 使用shell方式运行ci，
@@ -106,7 +106,7 @@ runner autoscale in aws： https://docs.gitlab.com/runner/configuration/runner_a
 
 
 
-# =============================== end =====================================
+# =============== end ================
 
 ## 注：
 
